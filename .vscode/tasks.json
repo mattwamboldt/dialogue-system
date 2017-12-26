@@ -1,0 +1,8 @@
+{
+    "version": "0.1.0",
+    "command": ".\\node_modules\\.bin\\eslint",
+    "isShellCommand": true,
+    "args": ["--ext", "jsx", "src"],
+    "showOutput": "silent",
+    "problemMatcher": "$eslint-stylish"
+}
