@@ -1,103 +1,110 @@
-const webpack = require('webpack'); //to access built-in plugins
+/* eslint-env node */
 const path = require('path');
-const ExtractTextPlugin = require("extract-text-webpack-plugin");
+const CopyPlugin = require('copy-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
+const webpack = require('webpack');
 
-const sources = [
-    './src/script/index.jsx',
-    './src/styles/main.scss'
-];
-
-const output = {
-    path: path.resolve(__dirname, 'static/build'),
-    filename: 'bundle.js',
-    publicPath: "/static/build/"
-};
-
-const scriptLoader = {
-    test: /\.jsx?$/,
-    loaders: ['babel-loader', "eslint-loader"],
-    exclude: /node_modules/,
-    include: path.resolve(__dirname, 'src'),
-};
-
-const svgLoader = {
-    test: /\.svg?$/,
-    use: ['babel-loader', 'svg-react-loader',
-        {
-            loader: 'svgo-loader',
-            options: {
-                plugins: [
-                    { collapseGroups: false }
-                ]
-            }
-        }
-    ],
-    exclude: /node_modules/,
-    include: path.resolve(__dirname, 'src'),
-};
-
-const resolver = {
-    extensions: ['.js', '.jsx']
-};
-
-const productionConfig = {
-    entry: sources,
-    output: output,
-    resolve: resolver,
-
+var config = {
+    entry: {
+        app: [
+            './src/script/index.tsx',
+            './src/styles/main.scss'
+        ]
+    },
+    output: {
+        filename: '[name].js',
+        path: path.resolve(__dirname, 'dist'),
+        assetModuleFilename: '[file]',
+        publicPath: "/",
+        clean: true,
+    },
     module: {
         rules: [
-            svgLoader,
-            scriptLoader,
+            {
+                test: /\.[jt]sx?$/,
+                use: 'ts-loader',
+                exclude: /node_modules/,
+            },
             {
                 test: /\.scss$/,
-                use: ExtractTextPlugin.extract({
-                    fallback: 'style-loader',
-                    use: ['css-loader', 'sass-loader']
-                })
-            }
-        ]
-    },
-    plugins: [
-        new ExtractTextPlugin('bundle.css')
-    ]
-};
-
-const devConfig = {
-    entry: sources,
-    output: output,
-    resolve: resolver,
-
-    devtool: 'source-map',
-
-    module: {
-        loaders: [
-            svgLoader,
-            scriptLoader,
+                use: [
+                    MiniCssExtractPlugin.loader,
+                    'css-loader',
+                    'sass-loader',
+                ],
+            },
             {
-                test: /\.scss$/,
-                loaders: ["style-loader", "css-loader", "sass-loader"]
-            }
+                test: /\.svg$/i,
+                issuer: /\.[jt]sx?$/,
+                use: [
+                    {
+                        loader: '@svgr/webpack',
+                        options: {
+                            icon: true,
+                            replaceAttrValues: { ['#d6d6d6']: 'currentColor' },
+                        },
+                    },
+                    {
+                        loader: 'file-loader',
+                        options: {
+                            name: 'static/images/[name].[ext]',
+                        },
+                    },
+                ],
+            },
+            {
+                test: /\.(jpe?g|gif|png|woff|woff2|ttf|wav|mp3)$/,
+                type: 'asset/resource',
+                generator: {
+                    emit: false,
+                },
+            },
         ]
     },
-    devServer: {
-        hotOnly: true,
-        host: '0.0.0.0',
-        disableHostCheck: true,
-        historyApiFallback: {
-            index: 'index.html'
-        }
+    resolve: {
+        extensions: ['.ts', '.tsx', '.js', '.jsx', '.css', '.scss'],
     },
     plugins: [
-        new webpack.HotModuleReplacementPlugin(),
-        new webpack.NamedModulesPlugin()
-    ]
+        new HtmlWebpackPlugin({
+            template: './src/index.html',
+        }),
+        new MiniCssExtractPlugin(),
+    ],
 };
 
-module.exports = (env) => {
-    if (env === 'production') {
-        return productionConfig;
+module.exports = (env, argv) => {
+    if (argv.mode === 'development') {
+        config.devtool = 'eval-source-map';
+        config.devServer = {
+            historyApiFallback: true,
+            static: {
+                directory: path.join(__dirname, 'static'),
+                publicPath: '/static',
+            },
+        };
+    } else if (argv.mode === 'production') {
+        config.output.publicPath = 'auto';
+        config.optimization = {
+            minimize: true,
+            minimizer: [new TerserPlugin({
+                extractComments: false,
+            })],
+        };
+
+        config.plugins.push(new CopyPlugin({
+            patterns: [
+                { from: 'static', to: 'static' },
+            ],
+        }));
     }
 
-    return devConfig;
+    config.plugins.push(
+        new webpack.DefinePlugin({
+            'process.env.BASENAME': JSON.stringify(config.output.publicPath),
+        })
+    );
+
+    return config;
 };

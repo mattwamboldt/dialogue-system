@@ -1,5 +1,4 @@
 import React from "react";
-import { connect } from 'react-redux';
 
 const lines = {
     LINE_001: 'I went for a walk down the road',
@@ -26,9 +25,22 @@ const dialogue = {
     }
 };
 
-class App extends React.Component {
-    constructor(props) {
+interface IState {
+    currentLine: string,
+    currentText: string,
+    letterElapsed: number,
+    lineDisplayed: boolean,
+    numCharsDisplayed: number,
+    sequence: string,
+    lineIndex: number
+}
+
+class App extends React.Component<{}, IState> {
+    private start: number;
+
+    public constructor(props) {
         super(props);
+
         this.state = {
             currentLine: 'LINE_001',
             currentText: '',
@@ -38,16 +50,15 @@ class App extends React.Component {
             sequence: 'SEQUENCE_001',
             lineIndex: 0
         };
-        this.tick = this.tick.bind(this);
-        this.nextLine = this.nextLine.bind(this);
+
         this.start = null;
     }
 
-    componentDidMount() {
+    public componentDidMount() {
         requestAnimationFrame(this.tick);
     }
 
-    tick(timestamp) {
+    public tick = (timestamp: number) => {
         if (!this.start) {
             this.start = timestamp;
         }
@@ -55,7 +66,7 @@ class App extends React.Component {
         const elapsed = (timestamp - this.start) / 1000;
         this.start = timestamp;
 
-        let newState = {};
+        let newState: any = {};
 
         const textSpeed = 0.075;
         if (!this.state.lineDisplayed) {
@@ -79,7 +90,7 @@ class App extends React.Component {
         requestAnimationFrame(this.tick);
     }
 
-    render() {
+    public render() {
         return (
             <div className='game'>
                 <p onClick={this.nextLine}>{this.state.currentText}</p>
@@ -87,7 +98,7 @@ class App extends React.Component {
         );
     }
 
-    nextLine() {
+    private nextLine = () => {
         const currentSequence = dialogue[this.state.sequence];
         if (this.state.lineDisplayed) {
 
@@ -114,8 +125,4 @@ class App extends React.Component {
     }
 }
 
-const mapStateToProps = () => {
-    return {};
-};
-
-export default connect(mapStateToProps)(App);
+export default App;
