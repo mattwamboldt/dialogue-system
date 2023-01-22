@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 const lines = {
     LINE_001: 'I went for a walk down the road',
@@ -7,22 +7,22 @@ const lines = {
     LINE_004: 'Grapes',
     LINE_005: 'Melons',
     LINE_006: 'Oranges',
-    LINE_007: 'Coconuts'
+    LINE_007: 'Coconuts',
 };
 
 const dialogue = {
     SEQUENCE_001: {
         random: true,
         contents: [
-            {lineCode: 'LINE_001'},
-            {lineCode: 'LINE_002'},
-            {lineCode: 'LINE_003'},
-            {lineCode: 'LINE_004'},
-            {lineCode: 'LINE_005'},
-            {lineCode: 'LINE_006'},
-            {lineCode: 'LINE_007'}
-        ]
-    }
+            { lineCode: 'LINE_001' },
+            { lineCode: 'LINE_002' },
+            { lineCode: 'LINE_003' },
+            { lineCode: 'LINE_004' },
+            { lineCode: 'LINE_005' },
+            { lineCode: 'LINE_006' },
+            { lineCode: 'LINE_007' },
+        ],
+    },
 };
 
 interface IState {
@@ -35,7 +35,7 @@ interface IState {
     lineIndex: number
 }
 
-class App extends React.Component<{}, IState> {
+class App extends React.Component<any, IState> {
     private start: number;
 
     public constructor(props) {
@@ -48,7 +48,7 @@ class App extends React.Component<{}, IState> {
             lineDisplayed: false,
             numCharsDisplayed: 0,
             sequence: 'SEQUENCE_001',
-            lineIndex: 0
+            lineIndex: 0,
         };
 
         this.start = null;
@@ -66,7 +66,7 @@ class App extends React.Component<{}, IState> {
         const elapsed = (timestamp - this.start) / 1000;
         this.start = timestamp;
 
-        let newState: any = {};
+        const newState: any = {};
 
         const textSpeed = 0.075;
         if (!this.state.lineDisplayed) {
@@ -79,7 +79,7 @@ class App extends React.Component<{}, IState> {
                 const currentSequenceLine = currentSequence.contents[this.state.lineIndex];
                 const currentLine = lines[currentSequenceLine.lineCode];
                 newState.currentText = currentLine.substring(0, newState.numCharsDisplayed);
-                if (newState.numCharsDisplayed == currentLine.length) {
+                if (newState.numCharsDisplayed === currentLine.length) {
                     newState.lineDisplayed = true;
                 }
             }
@@ -88,11 +88,11 @@ class App extends React.Component<{}, IState> {
         this.setState(newState);
 
         requestAnimationFrame(this.tick);
-    }
+    };
 
     public render() {
         return (
-            <div className='game'>
+            <div className="game">
                 <p onClick={this.nextLine}>{this.state.currentText}</p>
             </div>
         );
@@ -101,8 +101,7 @@ class App extends React.Component<{}, IState> {
     private nextLine = () => {
         const currentSequence = dialogue[this.state.sequence];
         if (this.state.lineDisplayed) {
-
-            let nextLineIndex;
+            let nextLineIndex: number;
             if (currentSequence.random) {
                 nextLineIndex = Math.floor(Math.random() * (currentSequence.contents.length - 1));
             } else {
@@ -114,7 +113,7 @@ class App extends React.Component<{}, IState> {
                 letterElapsed: 0,
                 lineDisplayed: false,
                 numCharsDisplayed: 0,
-                lineIndex: nextLineIndex
+                lineIndex: nextLineIndex,
             });
         } else {
             this.setState({
@@ -122,7 +121,7 @@ class App extends React.Component<{}, IState> {
                 lineDisplayed: true,
             });
         }
-    }
+    };
 }
 
 export default App;

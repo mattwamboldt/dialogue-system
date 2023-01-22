@@ -5,6 +5,7 @@ const renderApp = () => {
     const rootElement = document.getElementById('app');
     const root = createRoot(rootElement);
 
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const App = require('./view').default;
 
     root.render(
